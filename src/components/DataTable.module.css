@@ -1,0 +1,118 @@
+.wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--color-surface-content);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.sm .table {
+  min-width: 0;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-primary-tint);
+  color: var(--color-text-heading);
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.table td {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-heading);
+  font-weight: 300;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.table .left {
+  text-align: left;
+}
+
+.table .regular {
+  font-weight: 400;
+  color: var(--color-text-body);
+}
+
+.gutterCol {
+  width: 81px;
+}
+
+.table .gutter {
+  padding-left: 28px;
+  text-align: left;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  vertical-align: middle;
+  accent-color: var(--color-primary-dark);
+}
+
+.highlighted td {
+  background: #fff8f4;
+}
+
+.empty {
+  padding: 40px 16px;
+  color: var(--color-text-secondary) !important;
+  font-weight: 400 !important;
+}
+
+/* Medium: Device List, Distress History, Operators, System Logs */
+.md th {
+  height: 48px;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.md td {
+  height: 62px;
+  padding: 8px 12px;
+  font-size: 19px;
+  line-height: 28px;
+}
+
+.md td.regular {
+  font-size: 18px;
+}
+
+.md th.left,
+.md td.left {
+  padding-left: 0;
+}
+
+/* Small: Active Distress Signal panel on the map */
+.sm {
+  border: 0;
+  border-radius: 0;
+}
+
+.sm th {
+  height: 35px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.sm td {
+  height: 38px;
+  padding: 4px 8px;
+  border-top: 1px solid var(--color-border);
+  font-size: 13px;
+  line-height: 20px;
+}

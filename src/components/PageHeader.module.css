@@ -1,0 +1,39 @@
+.header {
+  flex-shrink: 0;
+  min-height: 122px;
+  padding: 25px 22px 24px;
+  background: var(--color-surface-content);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.title {
+  font-size: 35px;
+  font-weight: 600;
+  line-height: 42px;
+  color: var(--color-text-heading);
+}
+
+.description {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+  color: var(--color-text-description);
+}
+
+@media (max-width: 640px) {
+  .header {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 26px;
+    line-height: 34px;
+  }
+
+  .description {
+    font-size: 15px;
+    line-height: 22px;
+  }
+}

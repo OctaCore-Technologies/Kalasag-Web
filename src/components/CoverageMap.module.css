@@ -1,0 +1,109 @@
+.map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 908 / 800;
+  overflow: hidden;
+  background: #e8e4d8;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.base {
+  position: absolute;
+  left: -5.41%;
+  top: -20.19%;
+  width: 110.93%;
+  height: 149.78%;
+  max-width: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.geofence {
+  position: absolute;
+  width: 29.07%;
+  height: 33%;
+  pointer-events: none;
+}
+
+.tower {
+  position: absolute;
+  width: 2.53%;
+  height: 3.5%;
+}
+
+.marker {
+  position: absolute;
+  width: 2.2%;
+  height: 2.5%;
+  min-width: 14px;
+  min-height: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.outer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.inner {
+  position: absolute;
+  inset: 25%;
+  width: 50%;
+  height: 50%;
+}
+
+.focused::after {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: ping 1.2s ease-out infinite;
+}
+
+@keyframes ping {
+  from {
+    opacity: 1;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--color-text-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.marker:hover .tooltip,
+.marker:focus-visible .tooltip,
+.focused .tooltip {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .focused::after {
+    animation: none;
+  }
+}
