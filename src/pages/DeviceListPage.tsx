@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import archiveIcon from '../assets/icon-archive.svg'
 import eyeIcon from '../assets/icon-eye.svg'
 import { BackButton } from '../components/BackButton'
@@ -27,7 +27,10 @@ export function DeviceListPage() {
   const { devices, addDevice } = useData()
   const navigate = useNavigate()
   const { confirm, notify, dialogElement } = useDialogs()
-  const [tab, setTab] = useState<DeviceType>('Distress Node')
+  // The tab lives in the URL so map relay towers can link straight to /devices?tab=relay.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab: DeviceType = searchParams.get('tab') === 'relay' ? 'Relay Tower' : 'Distress Node'
+  const setTab = (next: DeviceType) => setSearchParams(next === 'Relay Tower' ? { tab: 'relay' } : {}, { replace: true })
   const [showArchive, setShowArchive] = useState(false)
   const [adding, setAdding] = useState(false)
 

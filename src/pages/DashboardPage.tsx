@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Link } from 'react-router'
 import eyeIcon from '../assets/icon-eye-sm.svg'
 import { CoverageMap } from '../components/CoverageMap'
 import { DataTable, type Column } from '../components/DataTable'
@@ -13,10 +13,11 @@ import styles from './DashboardPage.module.css'
 
 const searchText = (s: ActiveSignal) => s.residentName
 
+/** The eye icon opens the same place as the signal's map marker. */
+const signalTarget = (s: ActiveSignal) => mapMarkers.find((m) => m.id === s.markerId)?.to ?? '/devices'
+
 export function DashboardPage() {
-  const [focusedMarker, setFocusedMarker] = useState<string>()
   const table = useTableState(activeSignals, searchText, 15)
-  const focusedSignal = activeSignals.find((s) => s.markerId === focusedMarker)
 
   const columns: Column<ActiveSignal>[] = [
     { key: 'name', header: 'Resident Name', weight: 155, render: (s) => s.residentName },
@@ -27,15 +28,9 @@ export function DashboardPage() {
       header: 'Action',
       weight: 110,
       render: (s) => (
-        <button
-          type="button"
-          className={listStyles.iconButton}
-          onClick={() => setFocusedMarker(s.markerId)}
-          aria-label={`Show ${s.residentName} on the map`}
-          aria-pressed={focusedMarker === s.markerId}
-        >
+        <Link to={signalTarget(s)} className={listStyles.iconButton} aria-label={`View ${s.residentName}`}>
           <img src={eyeIcon} alt="" width={18} height={12} />
-        </button>
+        </Link>
       ),
     },
   ]
@@ -49,13 +44,7 @@ export function DashboardPage() {
 
       <section className={styles.content} aria-label="Coverage map and active distress signals">
         <div className={styles.mapArea}>
-          <CoverageMap
-            markers={mapMarkers}
-            towers={relayTowers}
-            geofences={geofences}
-            focusedMarkerId={focusedMarker}
-            onMarkerSelect={(id) => setFocusedMarker((current) => (current === id ? undefined : id))}
-          />
+          <CoverageMap markers={mapMarkers} towers={relayTowers} geofences={geofences} />
         </div>
 
         <div className={styles.panel}>
@@ -71,7 +60,6 @@ export function DashboardPage() {
             columns={columns}
             rows={table.pageRows}
             rowKey={(s) => s.id}
-            highlightedKey={focusedSignal?.id}
             emptyMessage="No active distress signals."
           />
           <Pagination

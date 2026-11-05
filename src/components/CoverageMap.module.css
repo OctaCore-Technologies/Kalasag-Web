@@ -26,22 +26,43 @@
   pointer-events: none;
 }
 
-.tower {
+/* Clickable overlays: relay towers and distress markers */
+.pin {
   position: absolute;
+  display: block;
+  cursor: pointer;
+}
+
+.pin:hover,
+.pin:focus-visible {
+  z-index: 3;
+}
+
+.tower {
   width: 2.53%;
   height: 3.5%;
+  min-width: 14px;
+  min-height: 17px;
+}
+
+.towerArt {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  transition: transform 120ms ease;
+}
+
+.tower:hover .towerArt,
+.tower:focus-visible .towerArt {
+  transform: scale(1.2);
 }
 
 .marker {
-  position: absolute;
   width: 2.2%;
   height: 2.5%;
   min-width: 14px;
   min-height: 14px;
-  padding: 0;
-  border: 0;
   border-radius: 50%;
-  background: transparent;
 }
 
 .outer {
@@ -49,6 +70,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  transition: transform 120ms ease;
 }
 
 .inner {
@@ -58,24 +80,9 @@
   height: 50%;
 }
 
-.focused::after {
-  content: '';
-  position: absolute;
-  inset: -60%;
-  border: 2px solid var(--color-primary);
-  border-radius: 50%;
-  animation: ping 1.2s ease-out infinite;
-}
-
-@keyframes ping {
-  from {
-    opacity: 1;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.4);
-  }
+.marker:hover .outer,
+.marker:focus-visible .outer {
+  transform: scale(1.25);
 }
 
 .tooltip {
@@ -96,14 +103,14 @@
   transition: opacity 120ms ease;
 }
 
-.marker:hover .tooltip,
-.marker:focus-visible .tooltip,
-.focused .tooltip {
+.pin:hover .tooltip,
+.pin:focus-visible .tooltip {
   opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .focused::after {
-    animation: none;
+  .towerArt,
+  .outer {
+    transition: none;
   }
 }

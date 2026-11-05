@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import mapBase from '../assets/map-base.png'
 import geofence from '../assets/geofence.svg'
 import relayTower from '../assets/relay-tower.svg'
@@ -20,15 +21,14 @@ interface CoverageMapProps {
   markers: MapMarker[]
   towers: RelayTower[]
   geofences: { id: string; x: number; y: number }[]
-  focusedMarkerId?: string
-  onMarkerSelect?: (id: string) => void
 }
 
 /**
  * Static map from the Figma "Device Monitoring" frame. Every overlay is
  * positioned in percentages of the 908 × 800 frame so the composition scales.
+ * Relay towers open the Relay Tower tab; distress markers open the device.
  */
-export function CoverageMap({ markers, towers, geofences, focusedMarkerId, onMarkerSelect }: CoverageMapProps) {
+export function CoverageMap({ markers, towers, geofences }: CoverageMapProps) {
   return (
     <div className={styles.map}>
       <img src={mapBase} alt="Map of the monitored barangay" className={styles.base} />
@@ -38,33 +38,32 @@ export function CoverageMap({ markers, towers, geofences, focusedMarkerId, onMar
       ))}
 
       {towers.map((t) => (
-        <img
+        <Link
           key={t.id}
-          src={relayTower}
-          alt={`Relay tower ${t.id}`}
-          title={`Relay tower ${t.id}`}
-          className={styles.tower}
+          to="/devices?tab=relay"
+          className={[styles.pin, styles.tower].join(' ')}
           style={{ left: `${t.x}%`, top: `${t.y}%` }}
-        />
+          aria-label={`Relay tower ${t.id}`}
+        >
+          <img src={relayTower} alt="" className={styles.towerArt} />
+          <span className={styles.tooltip}>Relay tower {t.id}</span>
+        </Link>
       ))}
 
       {markers.map((m) => {
         const art = MARKER_ART[m.status]
         return (
-          <button
+          <Link
             key={m.id}
-            type="button"
-            className={[styles.marker, m.id === focusedMarkerId && styles.focused].filter(Boolean).join(' ')}
+            to={m.to}
+            className={[styles.pin, styles.marker].join(' ')}
             style={{ left: `${m.x}%`, top: `${m.y}%` }}
-            onClick={() => onMarkerSelect?.(m.id)}
             aria-label={m.label}
           >
             <img src={art.outer} alt="" className={styles.outer} />
             <img src={art.inner} alt="" className={styles.inner} />
-            <span className={styles.tooltip} role="presentation">
-              {m.label}
-            </span>
-          </button>
+            <span className={styles.tooltip}>{m.label}</span>
+          </Link>
         )
       })}
     </div>

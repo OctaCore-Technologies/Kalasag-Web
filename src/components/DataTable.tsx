@@ -27,7 +27,6 @@ interface DataTableProps<T> {
   /** Leading 81px column used by the left-aligned tables (holds checkboxes when selecting). */
   gutter?: boolean
   selection?: Selection
-  highlightedKey?: string
   emptyMessage?: string
 }
 
@@ -39,7 +38,6 @@ export function DataTable<T>({
   size = 'md',
   gutter = false,
   selection,
-  highlightedKey,
   emptyMessage = 'No records to show.',
 }: DataTableProps<T>) {
   const totalWeight = columns.reduce((sum, c) => sum + c.weight, 0)
@@ -93,7 +91,7 @@ export function DataTable<T>({
           {rows.map((row) => {
             const key = rowKey(row)
             return (
-              <tr key={key} className={key === highlightedKey ? styles.highlighted : undefined}>
+              <tr key={key}>
                 {hasGutter && (
                   <td className={styles.gutter}>
                     {selection && (

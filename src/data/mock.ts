@@ -124,11 +124,12 @@ export const activeSignals: ActiveSignal[] = [
 ]
 
 export const mapMarkers: MapMarker[] = [
-  { id: 'm1', status: 'Trapped', label: 'OS-234725 · Trapped', x: 36.67, y: 59.38 },
-  { id: 'm2', status: 'Need Help', label: 'Rodge Patrick · Need Help', x: 46.48, y: 64.25 },
-  { id: 'm3', status: 'Trapped', label: 'Joshua Dayapera · Trapped', x: 57.71, y: 63.63 },
-  { id: 'm4', status: 'Safe', label: 'Nathaniel Tarroza · Safe', x: 71.26, y: 67.88 },
-  { id: 'm5', status: 'Need Help', label: 'AD-485673 · Need Help', x: 58.26, y: 75.63 },
+  { id: 'm1', status: 'Trapped', label: 'OS-234725 · Trapped', to: '/devices/OS-234725', x: 36.67, y: 59.38 },
+  { id: 'm2', status: 'Need Help', label: 'Rodge Patrick · Need Help', to: '/devices/OS-234725', x: 46.48, y: 64.25 },
+  { id: 'm3', status: 'Trapped', label: 'Joshua Dayapera · Trapped', to: '/devices/AU-082904', x: 57.71, y: 63.63 },
+  // The green marker opens the Device List in the prototype rather than a profile.
+  { id: 'm4', status: 'Safe', label: 'Nathaniel Tarroza · Safe', to: '/devices', x: 71.26, y: 67.88 },
+  { id: 'm5', status: 'Need Help', label: 'AD-485673 · Need Help', to: '/devices/AD-485673', x: 58.26, y: 75.63 },
 ]
 
 export const relayTowers: RelayTower[] = [

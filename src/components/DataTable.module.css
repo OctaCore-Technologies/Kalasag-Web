@@ -72,10 +72,6 @@
   background-image: url('../assets/icon-check.svg');
 }
 
-.highlighted td {
-  background: #fff8f4;
-}
-
 .empty {
   padding: 40px 16px;
   color: var(--color-text-secondary) !important;

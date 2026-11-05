@@ -46,6 +46,8 @@ export interface MapMarker {
   id: string
   status: DistressStatus
   label: string
+  /** Where clicking the marker goes (the device profile, per the Figma prototype). */
+  to: string
   /** Position as a percentage of the map frame (908 × 800 in Figma). */
   x: number
   y: number
