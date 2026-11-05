@@ -18,7 +18,7 @@ const columns: Column<SystemLog>[] = [
 ]
 
 export function SystemLogsPage() {
-  const { logs } = useData()
+  const { ready, logs } = useData()
   const table = useTableState(logs, searchText)
 
   return (
@@ -36,7 +36,7 @@ export function SystemLogsPage() {
         rows={table.pageRows}
         rowKey={(l) => l.id}
         gutter
-        emptyMessage="No log entries match your search."
+        emptyMessage={ready ? 'No log entries match your search.' : 'Loading…'}
       />
 
       <Pagination

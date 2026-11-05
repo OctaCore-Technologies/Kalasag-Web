@@ -18,7 +18,7 @@ import styles from './ListPage.module.css'
 const searchText = (h: DistressRecord) => [h.deviceId, h.status, h.location, h.residentName].join(' ')
 
 export function DistressHistoryPage() {
-  const { history, setHistoryArchived } = useData()
+  const { ready, history, setHistoryArchived } = useData()
   const { confirm, notify, dialogElement } = useDialogs()
   const [showArchive, setShowArchive] = useState(false)
 
@@ -104,7 +104,7 @@ export function DistressHistoryPage() {
         columns={columns}
         rows={table.pageRows}
         rowKey={(h) => h.id}
-        emptyMessage={showArchive ? 'No archived records.' : 'No distress records match your search.'}
+        emptyMessage={!ready ? 'Loading…' : showArchive ? 'No archived records.' : 'No distress records match your search.'}
       />
 
       <Pagination

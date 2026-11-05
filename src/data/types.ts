@@ -17,6 +17,13 @@ export interface Device {
   /** Battery percentage & estimated remaining life, as reported by the node. */
   battery: string
   archived: boolean
+  /** Position on the coverage map (% of the map frame); set for relay towers. */
+  map?: MapPosition
+}
+
+export interface MapPosition {
+  x: number
+  y: number
 }
 
 export interface DeviceEvent {
@@ -49,12 +56,6 @@ export interface MapMarker {
   /** Where clicking the marker goes (the device profile, per the Figma prototype). */
   to: string
   /** Position as a percentage of the map frame (908 × 800 in Figma). */
-  x: number
-  y: number
-}
-
-export interface RelayTower {
-  id: string
   x: number
   y: number
 }

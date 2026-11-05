@@ -7,8 +7,7 @@ import { Button } from '../components/Button'
 import { DeviceFormModal } from '../components/DeviceFormModal'
 import { PageHeader } from '../components/PageHeader'
 import { StatusText } from '../components/StatusText'
-import { useData } from '../data/DataContext'
-import { deviceEvents } from '../data/mock'
+import { useData, useDeviceEvents } from '../data/DataContext'
 import { useDialogs } from '../hooks/useDialogs'
 import styles from './DeviceProfilePage.module.css'
 
@@ -37,10 +36,11 @@ function DetailSection({ title, rows }: { title: string; rows: [string, ReactNod
 export function DeviceProfilePage() {
   const { deviceId } = useParams()
   const navigate = useNavigate()
-  const { devices, updateDevice, setDevicesArchived } = useData()
+  const { ready, devices, updateDevice, setDevicesArchived } = useData()
   const { confirm, notify, dialogElement } = useDialogs()
   const [editing, setEditing] = useState(false)
   const device = devices.find((d) => d.id === deviceId)
+  const events = useDeviceEvents(device?.id)
 
   if (!device) {
     return (
@@ -48,14 +48,19 @@ export function DeviceProfilePage() {
         <PageHeader title={TITLE} description={DESCRIPTION} />
         <section className={styles.card}>
           <p className={styles.missing}>
-            Device <strong>{deviceId}</strong> was not found. <Link to="/devices">Back to Device List</Link>
+            {ready ? (
+              <>
+                Device <strong>{deviceId}</strong> was not found. <Link to="/devices">Back to Device List</Link>
+              </>
+            ) : (
+              'Loading…'
+            )}
           </p>
         </section>
       </div>
     )
   }
 
-  const events = deviceEvents[device.id] ?? []
   const residentRows: [string, ReactNode][] = [
     ['Name', device.residentName],
     ['Date of Birth', device.birthDate ? dateFormat.format(new Date(device.birthDate)) : '—'],

@@ -1,57 +1,108 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { FirebaseError } from 'firebase/app'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth'
+import { doc, getDoc, getDocFromCache, type DocumentData } from 'firebase/firestore'
 import type { Role } from '../data/types'
+import { auth, db } from '../lib/firebase'
+import { operatorEmail } from '../lib/operatorEmail'
 
 export interface Session {
+  uid: string
   operatorId: string
   name: string
   role: Role
 }
 
 interface AuthValue {
+  /** False until Firebase has restored (or ruled out) a saved session. */
+  ready: boolean
   session: Session | null
   login: (operatorId: string, password: string) => Promise<Session>
-  logout: () => void
+  logout: () => Promise<void>
 }
-
-const STORAGE_KEY = 'kalasag.session'
 
 const AuthContext = createContext<AuthValue | null>(null)
 
-function readStoredSession(): Session | null {
+/**
+ * Role and display name live in users/{uid}. Read the local cache first so an
+ * offline reload doesn't wait on the network; fetch from the server only on a miss.
+ */
+async function loadSession(user: User): Promise<Session> {
+  const fallbackId = user.email?.split('@')[0].toUpperCase() ?? 'OPERATOR'
+  const ref = doc(db, 'users', user.uid)
+  let data: DocumentData | undefined
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Session) : null
+    data = (await getDocFromCache(ref)).data()
   } catch {
-    return null
+    // Not cached yet (first sign-in on this device).
+  }
+  if (!data) {
+    try {
+      data = (await getDoc(ref)).data()
+    } catch {
+      // Offline with nothing cached: fall back to the least-privileged role.
+    }
+  }
+  return {
+    uid: user.uid,
+    operatorId: data?.operatorId ?? fallbackId,
+    name: data?.name ?? fallbackId,
+    role: data?.role === 'admin' ? 'admin' : 'operator',
+  }
+}
+
+function loginErrorMessage(error: unknown) {
+  const code = error instanceof FirebaseError ? error.code : ''
+  switch (code) {
+    case 'auth/invalid-credential':
+    case 'auth/invalid-email':
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+      return 'Incorrect Operator ID or password.'
+    case 'auth/network-request-failed':
+      return "Can't reach the server. Sign in once while online — after that the console keeps working offline."
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Try again in a few minutes.'
+    case 'auth/user-disabled':
+      return 'This operator account has been disabled.'
+    default:
+      return 'Unable to sign in. Please try again.'
   }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(readStoredSession)
+  const [ready, setReady] = useState(false)
+  const [session, setSession] = useState<Session | null>(null)
 
-  // Mock sign-in until the Express API exists: any credentials work, and IDs
-  // starting with "OP-" get the operator role (no Operators / System Log pages).
+  useEffect(
+    () =>
+      onAuthStateChanged(auth, async (user) => {
+        setSession(user ? await loadSession(user) : null)
+        setReady(true)
+      }),
+    [],
+  )
+
   const login = useCallback(async (operatorId: string, password: string) => {
     if (!operatorId.trim() || !password) {
       throw new Error('Enter your operator ID and password.')
     }
-    const id = operatorId.trim().toUpperCase()
-    const next: Session = {
-      operatorId: id,
-      name: 'Josh',
-      role: id.startsWith('OP-') ? 'operator' : 'admin',
+    try {
+      const { user } = await signInWithEmailAndPassword(auth, operatorEmail(operatorId), password)
+      const next = await loadSession(user)
+      setSession(next)
+      return next
+    } catch (error) {
+      throw new Error(loginErrorMessage(error))
     }
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    setSession(next)
-    return next
   }, [])
 
-  const logout = useCallback(() => {
-    sessionStorage.removeItem(STORAGE_KEY)
+  const logout = useCallback(async () => {
+    await signOut(auth)
     setSession(null)
   }, [])
 
-  const value = useMemo(() => ({ session, login, logout }), [session, login, logout])
+  const value = useMemo(() => ({ ready, session, login, logout }), [ready, session, login, logout])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

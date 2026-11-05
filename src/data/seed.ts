@@ -1,5 +1,5 @@
-// Sample records taken from the Figma screens. Replace with the Express API /
-// Supabase data once the backend is wired up.
+// Seed data for Firestore, taken from the Figma screens. Loaded into the
+// emulator (or a project) by `npm run seed` — the app itself reads Firestore.
 import type {
   ActiveSignal,
   Device,
@@ -7,7 +7,6 @@ import type {
   DistressRecord,
   MapMarker,
   Operator,
-  RelayTower,
   SystemLog,
 } from './types'
 
@@ -63,6 +62,7 @@ export const devices: Device[] = [
     email: '',
     battery: '96% - 26 days',
     archived: false,
+    map: { x: 42.29, y: 61.25 },
   },
   {
     id: 'RT-456723',
@@ -76,6 +76,7 @@ export const devices: Device[] = [
     email: '',
     battery: '0%',
     archived: false,
+    map: { x: 68.17, y: 66.13 },
   },
   {
     id: 'RT-234872',
@@ -89,6 +90,7 @@ export const devices: Device[] = [
     email: '',
     battery: '23% - 7 days',
     archived: false,
+    map: { x: 54.52, y: 65.63 },
   },
 ]
 
@@ -132,19 +134,6 @@ export const mapMarkers: MapMarker[] = [
   { id: 'm5', status: 'Need Help', label: 'AD-485673 · Need Help', to: '/devices/AD-485673', x: 58.26, y: 75.63 },
 ]
 
-export const relayTowers: RelayTower[] = [
-  { id: 'RT-234326', x: 42.29, y: 61.25 },
-  { id: 'RT-234872', x: 54.52, y: 65.63 },
-  { id: 'RT-456723', x: 68.17, y: 66.13 },
-]
-
-/** Geofence coverage circles (top-left corner, % of the map frame). */
-export const geofences = [
-  { id: 'g1', x: 28.41, y: 46.5 },
-  { id: 'g2', x: 40.42, y: 51.88 },
-  { id: 'g3', x: 54.52, y: 51.25 },
-]
-
 export const operators: Operator[] = [
   { key: 'op-1', accountId: 'OP-9235', name: 'Dayapera, Joshua V.', email: 'dayapera.joshuabscs2024@gmail.com', contact: '+63 924 254 3446', dateRegistered: 'October 10, 2026', archived: false },
   { key: 'op-2', accountId: 'OP-1025', name: 'Tarroza, Nathaniel C.', email: 'tarroza.nathanielbscs2024@gmail.com', contact: '+63 9619356807', dateRegistered: 'October 10, 2026', archived: false },
@@ -159,3 +148,9 @@ export const operators: Operator[] = [
 export const systemLogs: SystemLog[] = [
   { id: 'LOG-1', date: 'October 23, 2026', time: '8:23 AM', operator: 'Joshua Dayapera', actionType: 'System Login', description: 'User authenticated successfully' },
 ]
+
+/** Console accounts created in Firebase Auth by the seed script (emulator only). */
+export const seedUsers = [
+  { uid: 'admin-001', operatorId: 'ADMIN-001', name: 'Josh', role: 'admin', password: 'kalasag-admin' },
+  { uid: 'op-9235', operatorId: 'OP-9235', name: 'Joshua Dayapera', role: 'operator', password: 'kalasag-operator' },
+] as const

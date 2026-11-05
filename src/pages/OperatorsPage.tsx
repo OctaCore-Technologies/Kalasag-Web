@@ -31,7 +31,7 @@ const archiveColumns: Column<Operator>[] = [
 ]
 
 export function OperatorsPage() {
-  const { operators, addOperator, updateOperator, setOperatorsArchived } = useData()
+  const { ready, operators, addOperator, updateOperator, setOperatorsArchived } = useData()
   const { confirm, authorize, notify, dialogElement } = useDialogs()
   const [showArchive, setShowArchive] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -134,7 +134,7 @@ export function OperatorsPage() {
         rowKey={(o) => o.key}
         gutter
         selection={showArchive ? { selected, onChange: setSelected } : undefined}
-        emptyMessage={showArchive ? 'No archived operators.' : 'No operators match your search.'}
+        emptyMessage={!ready ? 'Loading…' : showArchive ? 'No archived operators.' : 'No operators match your search.'}
       />
 
       <Pagination

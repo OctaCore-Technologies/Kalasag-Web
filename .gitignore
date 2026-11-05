@@ -24,3 +24,9 @@ Thumbs.db
 
 # Claude Code local preview config
 .claude/
+
+# Firebase emulator logs and cache
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.firebase/

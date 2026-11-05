@@ -6,9 +6,10 @@ import octacoreLogo from '../../assets/octacore-logo.png'
 import styles from './Auth.module.css'
 
 export function AuthLayout() {
-  const { session } = useAuth()
+  const { ready, session } = useAuth()
   const location = useLocation()
 
+  if (!ready) return null
   if (session) {
     const from = (location.state as { from?: string } | null)?.from
     return <Navigate to={from && from !== '/login' ? from : '/map'} replace />

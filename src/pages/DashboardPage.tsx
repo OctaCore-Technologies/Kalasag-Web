@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router'
 import eyeIcon from '../assets/icon-eye-sm.svg'
 import { CoverageMap } from '../components/CoverageMap'
@@ -5,7 +6,7 @@ import { DataTable, type Column } from '../components/DataTable'
 import { PageHeader } from '../components/PageHeader'
 import { Pagination } from '../components/Pagination'
 import { StatusText } from '../components/StatusText'
-import { activeSignals, geofences, mapMarkers, relayTowers } from '../data/mock'
+import { useData } from '../data/DataContext'
 import type { ActiveSignal } from '../data/types'
 import { useTableState } from '../hooks/useTableState'
 import listStyles from './ListPage.module.css'
@@ -13,11 +14,19 @@ import styles from './DashboardPage.module.css'
 
 const searchText = (s: ActiveSignal) => s.residentName
 
-/** The eye icon opens the same place as the signal's map marker. */
-const signalTarget = (s: ActiveSignal) => mapMarkers.find((m) => m.id === s.markerId)?.to ?? '/devices'
-
 export function DashboardPage() {
-  const table = useTableState(activeSignals, searchText, 15)
+  const { ready, signals, markers, devices } = useData()
+  const table = useTableState(signals, searchText, 15)
+  const towers = useMemo(
+    () =>
+      devices
+        .filter((d) => d.type === 'Relay Tower' && !d.archived && d.map)
+        .map((d) => ({ id: d.id, x: d.map!.x, y: d.map!.y })),
+    [devices],
+  )
+
+  /** The eye icon opens the same place as the signal's map marker. */
+  const signalTarget = (s: ActiveSignal) => markers.find((m) => m.id === s.markerId)?.to ?? '/devices'
 
   const columns: Column<ActiveSignal>[] = [
     { key: 'name', header: 'Resident Name', weight: 155, render: (s) => s.residentName },
@@ -44,14 +53,14 @@ export function DashboardPage() {
 
       <section className={styles.content} aria-label="Coverage map and active distress signals">
         <div className={styles.mapArea}>
-          <CoverageMap markers={mapMarkers} towers={relayTowers} geofences={geofences} />
+          <CoverageMap markers={markers} towers={towers} />
         </div>
 
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
             <h2 className={styles.panelTitle}>Active Distress Signal</h2>
-            <span className={styles.count} aria-label={`${activeSignals.length} active signals`}>
-              {activeSignals.length}
+            <span className={styles.count} aria-label={`${signals.length} active signals`}>
+              {signals.length}
             </span>
           </div>
           <DataTable
@@ -60,7 +69,7 @@ export function DashboardPage() {
             columns={columns}
             rows={table.pageRows}
             rowKey={(s) => s.id}
-            emptyMessage="No active distress signals."
+            emptyMessage={ready ? 'No active distress signals.' : 'Loading…'}
           />
           <Pagination
             className={styles.panelPagination}

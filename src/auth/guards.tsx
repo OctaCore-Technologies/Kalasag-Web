@@ -4,8 +4,9 @@ import type { Role } from '../data/types'
 import { useAuth } from './AuthContext'
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { session } = useAuth()
+  const { ready, session } = useAuth()
   const location = useLocation()
+  if (!ready) return null
   if (!session) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   return children
 }

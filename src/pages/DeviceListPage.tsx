@@ -24,7 +24,7 @@ const DEVICE_LIST_DESCRIPTION =
   'Monitor registered devices, review their status and assigned locations, access resident profiles, and manage device records to ensure accurate and efficient system monitoring.'
 
 export function DeviceListPage() {
-  const { devices, addDevice } = useData()
+  const { ready, devices, addDevice } = useData()
   const navigate = useNavigate()
   const { confirm, notify, dialogElement } = useDialogs()
   // The tab lives in the URL so map relay towers can link straight to /devices?tab=relay.
@@ -118,7 +118,7 @@ export function DeviceListPage() {
         columns={!showArchive && tab === 'Relay Tower' ? relayColumns : nodeColumns}
         rows={table.pageRows}
         rowKey={(d) => d.id}
-        emptyMessage={showArchive ? 'No archived devices.' : 'No devices match your search.'}
+        emptyMessage={!ready ? 'Loading…' : showArchive ? 'No archived devices.' : 'No devices match your search.'}
       />
 
       <Pagination

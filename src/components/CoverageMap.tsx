@@ -8,7 +8,7 @@ import yellowOuter from '../assets/marker-yellow-outer.svg'
 import yellowInner from '../assets/marker-yellow-inner.svg'
 import greenOuter from '../assets/marker-green-outer.svg'
 import greenInner from '../assets/marker-green-inner.svg'
-import type { DistressStatus, MapMarker, RelayTower } from '../data/types'
+import type { DistressStatus, MapMarker, MapPosition } from '../data/types'
 import styles from './CoverageMap.module.css'
 
 const MARKER_ART: Record<DistressStatus, { outer: string; inner: string }> = {
@@ -17,10 +17,16 @@ const MARKER_ART: Record<DistressStatus, { outer: string; inner: string }> = {
   Safe: { outer: greenOuter, inner: greenInner },
 }
 
+/** Geofence coverage circles drawn on the static map (top-left corner, % of the frame). */
+const GEOFENCES = [
+  { id: 'g1', x: 28.41, y: 46.5 },
+  { id: 'g2', x: 40.42, y: 51.88 },
+  { id: 'g3', x: 54.52, y: 51.25 },
+]
+
 interface CoverageMapProps {
   markers: MapMarker[]
-  towers: RelayTower[]
-  geofences: { id: string; x: number; y: number }[]
+  towers: (MapPosition & { id: string })[]
 }
 
 /**
@@ -28,12 +34,12 @@ interface CoverageMapProps {
  * positioned in percentages of the 908 × 800 frame so the composition scales.
  * Relay towers open the Relay Tower tab; distress markers open the device.
  */
-export function CoverageMap({ markers, towers, geofences }: CoverageMapProps) {
+export function CoverageMap({ markers, towers }: CoverageMapProps) {
   return (
     <div className={styles.map}>
       <img src={mapBase} alt="Map of the monitored barangay" className={styles.base} />
 
-      {geofences.map((g) => (
+      {GEOFENCES.map((g) => (
         <img key={g.id} src={geofence} alt="" className={styles.geofence} style={{ left: `${g.x}%`, top: `${g.y}%` }} />
       ))}
 

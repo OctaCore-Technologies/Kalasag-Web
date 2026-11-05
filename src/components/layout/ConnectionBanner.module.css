@@ -1,0 +1,49 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-bottom: 9px;
+  padding: 9px 16px;
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.offline {
+  background: var(--color-pending-bg);
+  border-color: #f0d9a3;
+  color: var(--color-pending);
+}
+
+.syncing {
+  background: var(--color-available-bg);
+  border-color: #b9dcc7;
+  color: var(--color-available);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.syncing .dot {
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .syncing .dot {
+    animation: none;
+  }
+}

@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Console accounts: role + display name. Managed by admins (or the seed script).
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Field data every operator works with.
+    match /devices/{deviceId} {
+      allow read, write: if signedIn();
+
+      match /events/{eventId} {
+        allow read, write: if signedIn();
+      }
+    }
+
+    match /distressHistory/{recordId} {
+      allow read, write: if signedIn();
+    }
+
+    match /signals/{signalId} {
+      allow read, write: if signedIn();
+    }
+
+    match /mapMarkers/{markerId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Admin-only: operator records and the audit trail (anyone signed in may append to it).
+    match /operators/{operatorKey} {
+      allow read, write: if isAdmin();
+    }
+
+    match /logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if signedIn();
+    }
+  }
+}
