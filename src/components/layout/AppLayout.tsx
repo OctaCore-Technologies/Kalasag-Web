@@ -21,9 +21,8 @@ export function AppLayout() {
 
       {confirmingLogout && (
         <ConfirmDialog
-          title="Log out of Kalasag?"
-          message="You will need to sign in again to access the console."
-          confirmLabel="Log Out"
+          title="Log out?"
+          message="Are you sure you want to log out of this account?"
           onCancel={() => setConfirmingLogout(false)}
           onConfirm={() => {
             recordLog('System Logout', 'User signed out')

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import archiveIcon from '../assets/icon-archive.svg'
+import restoreIcon from '../assets/icon-restore.svg'
 import trashIcon from '../assets/icon-trash.svg'
+import { BackButton } from '../components/BackButton'
 import { Button } from '../components/Button'
 import { DataTable, type Column } from '../components/DataTable'
 import { PageHeader } from '../components/PageHeader'
@@ -19,37 +21,21 @@ export function DistressHistoryPage() {
   const { history, setHistoryArchived } = useData()
   const { confirm, notify, dialogElement } = useDialogs()
   const [showArchive, setShowArchive] = useState(false)
-  const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const rows = useMemo(() => history.filter((h) => h.archived === showArchive), [history, showArchive])
   const table = useTableState(rows, searchText)
 
   const deleteRecord = (record: DistressRecord) =>
-    confirm(
-      {
-        title: 'Delete this record?',
-        message: `The distress record for ${record.deviceId} will be moved to the archive.`,
-        confirmLabel: 'Delete',
-      },
-      () => {
-        setHistoryArchived([record.id], true)
-        notify('History Deleted', 'The distress record has been moved to the archive.')
-      },
-    )
+    confirm({ title: 'Delete History?', message: 'Are you sure you want to delete this history?' }, () => {
+      setHistoryArchived([record.id], true)
+      notify('History Deleted Successfully!', 'The history record has been deleted successfully.')
+    })
 
-  const restoreSelected = () =>
-    confirm(
-      {
-        title: 'Restore selected records?',
-        message: `${selected.size} record${selected.size === 1 ? '' : 's'} will be moved back to the distress history.`,
-        confirmLabel: 'Restore',
-      },
-      () => {
-        setHistoryArchived([...selected], false)
-        setSelected(new Set())
-        notify('History Restored', 'The selected records are back in the distress history.')
-      },
-    )
+  const restoreRecord = (record: DistressRecord) =>
+    confirm({ title: 'Restore Record?', message: 'Are you sure you want to restore this record?' }, () => {
+      setHistoryArchived([record.id], false)
+      notify('Record Restored Successfully!', 'The record has been restored successfully.')
+    })
 
   const columns: Column<DistressRecord>[] = [
     { key: 'device', header: 'Device ID', weight: 254, render: (h) => h.deviceId },
@@ -63,7 +49,14 @@ export function DistressHistoryPage() {
       inset: 103,
       render: (h) =>
         showArchive ? (
-          '—'
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={() => restoreRecord(h)}
+            aria-label={`Restore record for ${h.deviceId}`}
+          >
+            <img src={restoreIcon} alt="" width={25} height={25} />
+          </button>
         ) : (
           <button
             type="button"
@@ -79,7 +72,6 @@ export function DistressHistoryPage() {
 
   const toggleArchive = () => {
     setShowArchive((v) => !v)
-    setSelected(new Set())
     table.setSearch('')
   }
 
@@ -96,14 +88,7 @@ export function DistressHistoryPage() {
         searchLabel="Search distress history"
         actions={
           showArchive ? (
-            <>
-              <Button variant="neutral" onClick={toggleArchive}>
-                Back
-              </Button>
-              <Button onClick={restoreSelected} disabled={selected.size === 0}>
-                Restore
-              </Button>
-            </>
+            <BackButton onClick={toggleArchive} />
           ) : (
             <Button variant="neutral" icon={<img src={archiveIcon} alt="" width={18} height={18} />} onClick={toggleArchive}>
               Archive
@@ -119,7 +104,6 @@ export function DistressHistoryPage() {
         columns={columns}
         rows={table.pageRows}
         rowKey={(h) => h.id}
-        selection={showArchive ? { selected, onChange: setSelected } : undefined}
         emptyMessage={showArchive ? 'No archived records.' : 'No distress records match your search.'}
       />
 

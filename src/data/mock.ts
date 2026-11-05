@@ -1,6 +1,15 @@
 // Sample records taken from the Figma screens. Replace with the Express API /
 // Supabase data once the backend is wired up.
-import type { ActiveSignal, Device, DistressRecord, MapMarker, Operator, RelayTower, SystemLog } from './types'
+import type {
+  ActiveSignal,
+  Device,
+  DeviceEvent,
+  DistressRecord,
+  MapMarker,
+  Operator,
+  RelayTower,
+  SystemLog,
+} from './types'
 
 export const devices: Device[] = [
   {
@@ -9,10 +18,11 @@ export const devices: Device[] = [
     status: 'Active',
     location: 'Road 47 Dahlia Street',
     residentName: 'Joshua Dayapera',
-    birthDate: '1998-12-05',
-    address: 'No. 12 Dahlia St., Zone 2 Road 47, Hercules St. Brgy. 21, Camarin Caloocan City, Metro Manila Philippines, 1421',
-    phone: '924-254-3446',
+    birthDate: '2004-08-29',
+    address: 'Gloria Ville HOA Bahai Bukid Camarin II C.C.',
+    phone: '924 254 3446',
     email: 'dayapera.joshuabscs2024@gmail.com',
+    battery: '96% - 26 days',
     archived: false,
   },
   {
@@ -23,8 +33,9 @@ export const devices: Device[] = [
     residentName: 'Jestine Ashley Aquino',
     birthDate: '2001-03-14',
     address: 'Bagong Silang Rd. 23, Caloocan City, Metro Manila Philippines, 1428',
-    phone: '964-859-226',
+    phone: '964 859 226',
     email: 'aquino.jestinebscs2024@gmail.com',
+    battery: '81% - 22 days',
     archived: false,
   },
   {
@@ -34,48 +45,71 @@ export const devices: Device[] = [
     location: 'Saranay Street Lora 16',
     residentName: 'Rodge Patrick Pangilinan',
     birthDate: '1998-12-05',
-    address: 'Saranay Street Lora 16, Caloocan City, Metro Manila Philippines, 1421',
-    phone: '912-345-6789',
+    address: 'No. 12 Dahlia St., Zone 2 Road 47, Hercules St. Brgy. 21, Camarin Caloocan City, Metro Manila Philippines, 1421',
+    phone: '912 345 6789',
     email: 'panngilinan.rodgepatrickbscs2024@gmail.com',
+    battery: '0%',
     archived: false,
   },
   {
-    id: 'RT-000101',
+    id: 'RT-234326',
     type: 'Relay Tower',
     status: 'Active',
-    location: 'Gloria Ville HOA',
+    location: 'Road 47 Dahlia Street',
     residentName: '—',
     birthDate: '',
-    address: 'Gloria Ville HOA Clubhouse, Caloocan City',
+    address: 'Road 47 Dahlia Street, Camarin, Caloocan City',
     phone: '',
     email: '',
+    battery: '96% - 26 days',
     archived: false,
   },
   {
-    id: 'RT-000102',
-    type: 'Relay Tower',
-    status: 'Active',
-    location: 'Camarin Mangga Street',
-    residentName: '—',
-    birthDate: '',
-    address: 'Mangga Street corner Camarin Road, Caloocan City',
-    phone: '',
-    email: '',
-    archived: false,
-  },
-  {
-    id: 'RT-000103',
+    id: 'RT-456723',
     type: 'Relay Tower',
     status: 'Inactive',
-    location: 'Dahlia Street Blk 29',
+    location: 'Bagong Silang Rd. 23',
     residentName: '—',
     birthDate: '',
-    address: 'Dahlia Street Blk 29, Caloocan City',
+    address: 'Bagong Silang Rd. 23, Caloocan City',
     phone: '',
     email: '',
+    battery: '0%',
+    archived: false,
+  },
+  {
+    id: 'RT-234872',
+    type: 'Relay Tower',
+    status: 'Active',
+    location: 'Saranay Street Lora 16',
+    residentName: '—',
+    birthDate: '',
+    address: 'Saranay Street Lora 16, Caloocan City',
+    phone: '',
+    email: '',
+    battery: '23% - 7 days',
     archived: false,
   },
 ]
+
+/** "Recent Event Logs" on the device profile, newest first. */
+export const deviceEvents: Record<string, DeviceEvent[]> = {
+  'AU-082904': [
+    { date: 'Oct 27, 2026', time: '10:38 PM', status: 'Trapped' },
+    { date: 'Oct 25, 2026', time: '2:52 AM', status: 'Safe' },
+    { date: 'Oct 18, 2026', time: '1:22 PM', status: 'Safe' },
+    { date: 'Aug 28, 2026', time: '4:29 AM', status: 'Need Help' },
+    { date: 'Aug 25, 2026', time: '3:35 PM', status: 'Safe' },
+  ],
+  'AD-485673': [
+    { date: 'Oct 26, 2026', time: '9:14 PM', status: 'Need Help' },
+    { date: 'Sep 30, 2026', time: '6:02 AM', status: 'Safe' },
+  ],
+  'OS-234725': [
+    { date: 'Oct 27, 2026', time: '11:05 PM', status: 'Trapped' },
+    { date: 'Oct 02, 2026', time: '7:48 PM', status: 'Safe' },
+  ],
+}
 
 export const distressHistory: DistressRecord[] = [
   { id: 'DH-0001', deviceId: 'AU-082904', status: 'Safe', location: 'Road 47 Dahlia Street', residentName: 'Joshua Dayapera', archived: false },
@@ -98,9 +132,9 @@ export const mapMarkers: MapMarker[] = [
 ]
 
 export const relayTowers: RelayTower[] = [
-  { id: 'RT-000101', x: 42.29, y: 61.25 },
-  { id: 'RT-000102', x: 54.52, y: 65.63 },
-  { id: 'RT-000103', x: 68.17, y: 66.13 },
+  { id: 'RT-234326', x: 42.29, y: 61.25 },
+  { id: 'RT-234872', x: 54.52, y: 65.63 },
+  { id: 'RT-456723', x: 68.17, y: 66.13 },
 ]
 
 /** Geofence coverage circles (top-left corner, % of the map frame). */

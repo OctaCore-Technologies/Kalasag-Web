@@ -1,13 +1,13 @@
+import type { ReactNode } from 'react'
+import { statusColor } from '../data/status'
 import type { DeviceStatus, DistressStatus } from '../data/types'
 
-const COLORS: Record<DeviceStatus | DistressStatus, string> = {
-  Active: 'var(--color-available)',
-  Safe: 'var(--color-available)',
-  'Need Help': 'var(--color-pending)',
-  Inactive: 'var(--color-cancelled)',
-  Trapped: 'var(--color-cancelled)',
+interface StatusTextProps {
+  status: DeviceStatus | DistressStatus
+  /** Text to show in the status color; defaults to the status itself. */
+  children?: ReactNode
 }
 
-export function StatusText({ status }: { status: DeviceStatus | DistressStatus }) {
-  return <strong style={{ color: COLORS[status], fontWeight: 700 }}>{status}</strong>
+export function StatusText({ status, children }: StatusTextProps) {
+  return <strong style={{ color: statusColor(status), fontWeight: 700 }}>{children ?? status}</strong>
 }

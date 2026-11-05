@@ -87,6 +87,10 @@
   gap: 14px;
 }
 
+.row3 {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
 .divider {
   width: 100%;
   height: 1px;
@@ -215,4 +219,10 @@
 
 .footerButton {
   border-radius: var(--radius-md);
+}
+
+.pillFooter {
+  gap: 12px;
+  margin: 0 28px;
+  padding: 17px 0 23px;
 }

@@ -55,12 +55,21 @@
   text-align: left;
 }
 
+/* Archive-view checkbox from the "Operators Profile 1" frame: outlined box, check icon when selected. */
 .checkbox {
-  width: 20px;
-  height: 20px;
+  appearance: none;
+  width: 23px;
+  height: 22px;
   margin: 0;
   vertical-align: middle;
-  accent-color: var(--color-primary-dark);
+  border: 1px solid var(--color-text-body);
+  border-radius: 5px;
+  background: #fff center / 18px 19px no-repeat;
+  cursor: pointer;
+}
+
+.checkbox:checked {
+  background-image: url('../assets/icon-check.svg');
 }
 
 .highlighted td {

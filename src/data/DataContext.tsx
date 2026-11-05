@@ -3,7 +3,7 @@ import { useAuth } from '../auth/AuthContext'
 import * as seed from './mock'
 import type { Device, DistressRecord, Operator, SystemLog } from './types'
 
-export type DeviceInput = Omit<Device, 'id' | 'status' | 'archived' | 'location'> & { location?: string }
+export type DeviceInput = Omit<Device, 'id' | 'status' | 'archived' | 'location' | 'battery'> & { location?: string }
 export type OperatorInput = Pick<Operator, 'name' | 'email' | 'contact'>
 
 interface DataValue {
@@ -67,6 +67,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         id: `${prefix}-${randomDigits(6)}`,
         status: 'Active',
         location: input.location || firstLine(input.address),
+        battery: 'Awaiting first report',
         archived: false,
       }
       setDevices((prev) => [...prev, device])

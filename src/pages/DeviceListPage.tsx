@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import archiveIcon from '../assets/icon-archive.svg'
 import eyeIcon from '../assets/icon-eye.svg'
+import { BackButton } from '../components/BackButton'
 import { Button } from '../components/Button'
 import { DataTable, type Column } from '../components/DataTable'
 import { DeviceFormModal } from '../components/DeviceFormModal'
@@ -17,30 +18,33 @@ import styles from './ListPage.module.css'
 
 const TABS = ['Distress Node', 'Relay Tower'] as const
 
-const searchText = (d: Device) => [d.id, d.status, d.location, d.residentName].join(' ')
+const searchText = (d: Device) => [d.id, d.status, d.location, d.residentName, d.battery].join(' ')
 
-export const DEVICE_LIST_DESCRIPTION =
+const DEVICE_LIST_DESCRIPTION =
   'Monitor registered devices, review their status and assigned locations, access resident profiles, and manage device records to ensure accurate and efficient system monitoring.'
 
 export function DeviceListPage() {
-  const { devices, addDevice, setDevicesArchived } = useData()
+  const { devices, addDevice } = useData()
   const navigate = useNavigate()
   const { confirm, notify, dialogElement } = useDialogs()
   const [tab, setTab] = useState<DeviceType>('Distress Node')
   const [showArchive, setShowArchive] = useState(false)
-  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [adding, setAdding] = useState(false)
 
   const rows = useMemo(
-    () => devices.filter((d) => d.type === tab && d.archived === showArchive),
+    () => devices.filter((d) => d.archived === showArchive && (showArchive || d.type === tab)),
     [devices, tab, showArchive],
   )
   const table = useTableState(rows, searchText)
 
-  const columns: Column<Device>[] = [
-    { key: 'id', header: 'Device ID', weight: 254, render: (d) => d.id },
-    { key: 'status', header: 'Status', weight: 168, render: (d) => <StatusText status={d.status} /> },
-    { key: 'location', header: 'Location', weight: 566, render: (d) => d.location },
+  const idColumn: Column<Device> = { key: 'id', header: 'Device ID', weight: 254, render: (d) => d.id }
+  const statusColumn: Column<Device> = { key: 'status', header: 'Status', weight: 168, render: (d) => <StatusText status={d.status} /> }
+  const locationColumn: Column<Device> = { key: 'location', header: 'Location', weight: 566, render: (d) => d.location }
+
+  const nodeColumns: Column<Device>[] = [
+    idColumn,
+    statusColumn,
+    locationColumn,
     { key: 'resident', header: 'Resident Name', weight: 306, render: (d) => d.residentName },
     {
       key: 'action',
@@ -60,25 +64,23 @@ export function DeviceListPage() {
     },
   ]
 
+  const relayColumns: Column<Device>[] = [
+    idColumn,
+    statusColumn,
+    locationColumn,
+    {
+      key: 'battery',
+      header: 'Battery Percentage & Estimated Remaining Life',
+      weight: 514,
+      render: (d) => <StatusText status={d.status}>{d.battery}</StatusText>,
+    },
+    { key: 'spacer', header: '', weight: 105, render: () => null },
+  ]
+
   const toggleArchive = () => {
     setShowArchive((v) => !v)
-    setSelected(new Set())
     table.setSearch('')
   }
-
-  const restoreSelected = () =>
-    confirm(
-      {
-        title: 'Restore selected devices?',
-        message: `${selected.size} device${selected.size === 1 ? '' : 's'} will be moved back to the device list.`,
-        confirmLabel: 'Restore',
-      },
-      () => {
-        setDevicesArchived([...selected], false)
-        setSelected(new Set())
-        notify('Device Restored', 'The selected devices are back in the device list.')
-      },
-    )
 
   return (
     <div className={styles.page}>
@@ -90,14 +92,7 @@ export function DeviceListPage() {
         searchLabel="Search devices"
         actions={
           showArchive ? (
-            <>
-              <Button variant="neutral" onClick={toggleArchive}>
-                Back
-              </Button>
-              <Button onClick={restoreSelected} disabled={selected.size === 0}>
-                Restore
-              </Button>
-            </>
+            <BackButton onClick={toggleArchive} />
           ) : (
             <>
               <Button onClick={() => setAdding(true)}>+ Add Device</Button>
@@ -108,24 +103,18 @@ export function DeviceListPage() {
           )
         }
       >
-        <Tabs
-          label="Device type"
-          tabs={TABS}
-          value={tab}
-          onChange={(next) => {
-            setTab(next)
-            setSelected(new Set())
-          }}
-        />
-        {showArchive && <span className={styles.archiveNote}>Archived devices</span>}
+        {showArchive ? (
+          <span className={styles.archiveNote}>Archived devices</span>
+        ) : (
+          <Tabs label="Device type" tabs={TABS} value={tab} onChange={setTab} />
+        )}
       </Toolbar>
 
       <DataTable
         caption={showArchive ? 'Archived devices' : `${tab} devices`}
-        columns={columns}
+        columns={!showArchive && tab === 'Relay Tower' ? relayColumns : nodeColumns}
         rows={table.pageRows}
         rowKey={(d) => d.id}
-        selection={showArchive ? { selected, onChange: setSelected } : undefined}
         emptyMessage={showArchive ? 'No archived devices.' : 'No devices match your search.'}
       />
 
@@ -143,15 +132,12 @@ export function DeviceListPage() {
         <DeviceFormModal
           onCancel={() => setAdding(false)}
           onSubmit={(input) =>
-            confirm(
-              { title: 'Add this device?', message: 'The device will be registered and start reporting to the mesh.' },
-              () => {
-                const device = addDevice(input)
-                setAdding(false)
-                setTab(device.type)
-                notify('Device Added', `${device.id} has been registered successfully.`)
-              },
-            )
+            confirm({ title: 'Add Device?', message: 'Are you sure you want to add this device?' }, () => {
+              const device = addDevice(input)
+              setAdding(false)
+              setTab(device.type)
+              notify('Successfully Added!', 'The new device has been added successfully.')
+            })
           }
         />
       )}

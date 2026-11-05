@@ -52,8 +52,8 @@ export function DeviceFormModal({ device, onSubmit, onCancel }: DeviceFormModalP
 
   return (
     <FormModal
-      title={isEdit ? 'Edit Device' : 'Add New Device'}
-      subtitle={isEdit ? `Update ${device!.id}` : 'Register Device'}
+      title={isEdit ? 'Edit Device Info' : 'Add New Device'}
+      subtitle={isEdit ? 'Change Device Details' : 'Register Device'}
       icon={gearIcon}
       submitLabel={isEdit ? 'Save Changes' : 'Add Device'}
       onCancel={onCancel}

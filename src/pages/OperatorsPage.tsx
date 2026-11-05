@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import archiveIcon from '../assets/icon-archive.svg'
 import archiveBoxIcon from '../assets/icon-archive-box.svg'
 import editIcon from '../assets/icon-edit.svg'
+import { BackButton } from '../components/BackButton'
 import { Button } from '../components/Button'
 import { DataTable, type Column } from '../components/DataTable'
 import { OperatorFormModal } from '../components/OperatorFormModal'
@@ -16,9 +17,22 @@ import styles from './ListPage.module.css'
 
 const searchText = (o: Operator) => [o.accountId, o.name, o.email, o.contact, o.dateRegistered].join(' ')
 
+const idColumn: Column<Operator> = { key: 'id', header: 'Account ID', weight: 194, align: 'left', tone: 'regular', render: (o) => o.accountId }
+const nameColumn: Column<Operator> = { key: 'name', header: 'Name', weight: 308, align: 'left', tone: 'regular', render: (o) => o.name }
+const contactColumn: Column<Operator> = { key: 'contact', header: 'Contact Number', weight: 269, align: 'left', tone: 'regular', render: (o) => o.contact }
+
+/** Archive view drops the Action column, so Email and Date Registered widen (per the "Operators Profile 1" frame). */
+const archiveColumns: Column<Operator>[] = [
+  idColumn,
+  nameColumn,
+  { key: 'email', header: 'Email', weight: 501, align: 'left', tone: 'regular', render: (o) => o.email },
+  contactColumn,
+  { key: 'date', header: 'Date Registered', weight: 254, align: 'left', render: (o) => o.dateRegistered },
+]
+
 export function OperatorsPage() {
   const { operators, addOperator, updateOperator, setOperatorsArchived } = useData()
-  const { confirm, notify, dialogElement } = useDialogs()
+  const { confirm, authorize, notify, dialogElement } = useDialogs()
   const [showArchive, setShowArchive] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [editing, setEditing] = useState<Operator | 'new' | null>(null)
@@ -26,62 +40,52 @@ export function OperatorsPage() {
   const rows = useMemo(() => operators.filter((o) => o.archived === showArchive), [operators, showArchive])
   const table = useTableState(rows, searchText)
 
+  // Every operator-account change is confirmed, then authorized with the Administrator's code.
+  const confirmAndAuthorize = (spec: { title: string; message: string }, action: () => void) =>
+    confirm(spec, () => authorize(action))
+
   const archiveOperator = (operator: Operator) =>
-    confirm(
-      {
-        title: 'Archive this operator?',
-        message: `${operator.name} will lose access to the console until restored.`,
-        confirmLabel: 'Archive',
-      },
-      () => {
-        setOperatorsArchived([operator.key], true)
-        notify('Operator Archived', `${operator.accountId} has been moved to the archive.`)
-      },
-    )
+    confirmAndAuthorize({ title: 'Archive Operator?', message: 'Are you sure you want to archive this operator?' }, () => {
+      setOperatorsArchived([operator.key], true)
+      notify('Successfully Archived!', 'The operator has been archived successfully.')
+    })
 
   const restoreSelected = () =>
-    confirm(
-      {
-        title: 'Restore selected operators?',
-        message: `${selected.size} operator${selected.size === 1 ? '' : 's'} will regain access to the console.`,
-        confirmLabel: 'Restore',
-      },
+    confirmAndAuthorize(
+      { title: 'Recover Operator Account?', message: 'Are you sure you want to restore this operator account?' },
       () => {
         setOperatorsArchived([...selected], false)
         setSelected(new Set())
-        notify('Operator Restored', 'The selected operators have been restored.')
+        notify('Operator Restored Successfully!', 'The operator account has been restored successfully.')
       },
     )
 
-  const columns: Column<Operator>[] = [
-    { key: 'id', header: 'Account ID', weight: 194, align: 'left', tone: 'regular', render: (o) => o.accountId },
-    { key: 'name', header: 'Name', weight: 308, align: 'left', tone: 'regular', render: (o) => o.name },
+  const activeColumns: Column<Operator>[] = [
+    idColumn,
+    nameColumn,
     { key: 'email', header: 'Email', weight: 438, align: 'left', tone: 'regular', render: (o) => o.email },
-    { key: 'contact', header: 'Contact Number', weight: 269, align: 'left', tone: 'regular', render: (o) => o.contact },
+    contactColumn,
     { key: 'date', header: 'Date Registered', weight: 212, align: 'left', render: (o) => o.dateRegistered },
     {
       key: 'action',
       header: 'Action',
       weight: 105,
       align: 'left',
-      render: (o) =>
-        showArchive ? (
-          '—'
-        ) : (
-          <span className={styles.iconActions}>
-            <button type="button" className={styles.iconButton} onClick={() => setEditing(o)} aria-label={`Edit ${o.name}`}>
-              <img src={editIcon} alt="" width={31} height={31} />
-            </button>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={() => archiveOperator(o)}
-              aria-label={`Archive ${o.name}`}
-            >
-              <img src={archiveBoxIcon} alt="" width={26} height={25} />
-            </button>
-          </span>
-        ),
+      render: (o) => (
+        <span className={styles.iconActions}>
+          <button type="button" className={styles.iconButton} onClick={() => setEditing(o)} aria-label={`Edit ${o.name}`}>
+            <img src={editIcon} alt="" width={31} height={31} />
+          </button>
+          <button
+            type="button"
+            className={styles.iconButton}
+            onClick={() => archiveOperator(o)}
+            aria-label={`Archive ${o.name}`}
+          >
+            <img src={archiveBoxIcon} alt="" width={26} height={25} />
+          </button>
+        </span>
+      ),
     },
   ]
 
@@ -95,7 +99,7 @@ export function OperatorsPage() {
     <div className={styles.page}>
       <PageHeader
         title="Operators Profile"
-        description="Manage operator accounts, update their contact details, and control who can access the Kalasag console."
+        description="Manage operator accounts, review contact information, monitor registration details, and update operator records to maintain accurate system access information."
       />
 
       <Toolbar
@@ -105,9 +109,7 @@ export function OperatorsPage() {
         actions={
           showArchive ? (
             <>
-              <Button variant="neutral" onClick={toggleArchive}>
-                Back
-              </Button>
+              <BackButton onClick={toggleArchive} />
               <Button onClick={restoreSelected} disabled={selected.size === 0}>
                 Restore
               </Button>
@@ -127,7 +129,7 @@ export function OperatorsPage() {
 
       <DataTable
         caption={showArchive ? 'Archived operators' : 'Operators'}
-        columns={columns}
+        columns={showArchive ? archiveColumns : activeColumns}
         rows={table.pageRows}
         rowKey={(o) => o.key}
         gutter
@@ -151,16 +153,16 @@ export function OperatorsPage() {
           onCancel={() => setEditing(null)}
           onSubmit={(input) => {
             if (editing === 'new') {
-              confirm({ title: 'Add this operator?', message: `${input.name} will be able to sign in to the console.` }, () => {
-                const operator = addOperator(input)
+              confirmAndAuthorize({ title: 'Add Operator?', message: 'Are you sure you want to add this operator account?' }, () => {
+                addOperator(input)
                 setEditing(null)
-                notify('Operator Added', `${operator.accountId} has been registered successfully.`)
+                notify('Successfully Added!', 'The new operator has been added successfully.')
               })
             } else {
-              confirm({ title: 'Save changes?', message: `Update the profile of ${editing.accountId}.`, confirmLabel: 'Save' }, () => {
+              confirmAndAuthorize({ title: 'Save Edit?', message: 'Are you sure you want to save this info?' }, () => {
                 updateOperator(editing.key, input)
                 setEditing(null)
-                notify('Changes Saved', 'The operator profile has been updated.')
+                notify('Changes Saved Successfully!', 'Your changes have been saved successfully.')
               })
             }
           }}

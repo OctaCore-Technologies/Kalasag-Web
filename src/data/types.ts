@@ -14,7 +14,15 @@ export interface Device {
   address: string
   phone: string
   email: string
+  /** Battery percentage & estimated remaining life, as reported by the node. */
+  battery: string
   archived: boolean
+}
+
+export interface DeviceEvent {
+  date: string
+  time: string
+  status: DistressStatus
 }
 
 export interface DistressRecord {

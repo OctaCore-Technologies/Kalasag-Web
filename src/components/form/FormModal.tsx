@@ -16,12 +16,24 @@ interface FormModalProps {
   subtitle: string
   icon: string
   submitLabel: string
+  /** Device forms use 144 × 44 block buttons; the operator form uses dialog-style pills. */
+  buttonShape?: 'block' | 'pill'
   onSubmit: () => void
   onCancel: () => void
   children: ReactNode
 }
 
-export function FormModal({ title, subtitle, icon, submitLabel, onSubmit, onCancel, children }: FormModalProps) {
+export function FormModal({
+  title,
+  subtitle,
+  icon,
+  submitLabel,
+  buttonShape = 'block',
+  onSubmit,
+  onCancel,
+  children,
+}: FormModalProps) {
+  const pill = buttonShape === 'pill'
   const titleId = useId()
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -43,11 +55,16 @@ export function FormModal({ title, subtitle, icon, submitLabel, onSubmit, onCanc
           </div>
         </header>
         <div className={styles.body}>{children}</div>
-        <footer className={styles.footer}>
-          <Button variant="ghost" onClick={onCancel} className={styles.footerButton}>
+        <footer className={[styles.footer, pill && styles.pillFooter].filter(Boolean).join(' ')}>
+          <Button
+            variant={pill ? 'outline' : 'ghost'}
+            size={pill ? 'pill' : 'md'}
+            onClick={onCancel}
+            className={pill ? undefined : styles.footerButton}
+          >
             Cancel
           </Button>
-          <Button type="submit" className={styles.footerButton}>
+          <Button type="submit" size={pill ? 'pill' : 'md'} className={pill ? undefined : styles.footerButton}>
             {submitLabel}
           </Button>
         </footer>
@@ -68,8 +85,8 @@ export function FormSection({ title, children }: { title: string; children: Reac
   )
 }
 
-export function FormRow({ children }: { children: ReactNode }) {
-  return <div className={styles.row}>{children}</div>
+export function FormRow({ columns = 2, children }: { columns?: 2 | 3; children: ReactNode }) {
+  return <div className={[styles.row, columns === 3 && styles.row3].filter(Boolean).join(' ')}>{children}</div>
 }
 
 export function Divider() {

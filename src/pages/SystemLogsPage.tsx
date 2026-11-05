@@ -25,7 +25,7 @@ export function SystemLogsPage() {
     <div className={styles.page}>
       <PageHeader
         title="System Logs"
-        description="An audit trail of operator sign-ins and every change made to devices, distress records, and operator accounts."
+        description="Track system activities, review event timestamps and status updates, and monitor recorded actions for accountability."
       />
 
       <Toolbar search={table.search} onSearchChange={table.setSearch} searchLabel="Search system logs" />

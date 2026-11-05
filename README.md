@@ -20,7 +20,9 @@ npm run build      # type-check + production build to dist/
 npm run preview    # serve the production build
 ```
 
-Sign in with **any** Operator ID and password — authentication is mocked until the backend exists. IDs starting with `OP-` sign in with the **operator** role (no Operators Profile / System Log pages); anything else signs in as **admin**.
+This is a **demo**: there is no backend and all data is hard-coded in `src/data/mock.ts`. Changes you make (adding devices, archiving operators, …) live in memory and reset on page reload.
+
+Sign in with **any** Operator ID and password. IDs starting with `OP-` sign in with the **operator** role (no Operators Profile / System Log pages); anything else signs in as **admin**. The operator authorization-code dialog accepts any 4–10 digit code.
 
 ## Screens
 
@@ -29,10 +31,10 @@ Sign in with **any** Operator ID and password — authentication is mocked until
 | `/login` | Operator Login |
 | `/forgot-password` → `/verify-code` → `/reset-password` | Password reset flow |
 | `/map` | Device Monitoring — coverage map with geofences, relay towers, distress markers, and the Active Distress Signal panel |
-| `/devices` | Device List — Distress Node / Relay Tower tabs, search, Add Device, Archive / Restore |
-| `/devices/:deviceId` | Device profile — details, distress history, location; Edit Profile / Delete |
-| `/history` | Distress History — delete to archive, Archive / Restore |
-| `/operators` | Operators Profile (admin) — add, edit, archive / restore operators |
+| `/devices` | Device List — Distress Node / Relay Tower (battery) tabs, search, Add Device, Archive |
+| `/devices/:deviceId` | Device and Profile Information — resident and device details, location, recent event logs; Edit Profile / Delete / Restore |
+| `/history` | Distress History — delete to archive, restore from Archive |
+| `/operators` | Operators Profile (admin) — create, edit, archive / restore operators, each confirmed with an authorization code |
 | `/logs` | System Logs (admin) — audit trail; every action in the console is appended here |
 
 ## Project layout
@@ -47,15 +49,6 @@ src/
   pages/             One file per screen (auth screens in pages/auth)
   styles/global.css  Design tokens and base styles
 ```
-
-## Wiring up the backend
-
-The system flow in Figma has field devices uplink through MQTT/HTTP to an **Express API** that persists to **Supabase**. Until that exists:
-
-- `src/auth/AuthContext.tsx` — `login()` accepts any credentials. Replace it with the API call.
-- `src/data/DataContext.tsx` — holds devices, distress history, operators, and logs in React state, seeded from `src/data/mock.ts`. The data resets on a full page reload. Swap the setters for API calls (or Supabase queries) without changing the pages.
-- The password-reset screens validate input and move through the flow but do not send email yet.
-- The coverage map is the static map image from the design, with overlays positioned in percentages. Swap `CoverageMap` for a live map (e.g. Leaflet) once node coordinates come from the API.
 
 ## Deploying
 

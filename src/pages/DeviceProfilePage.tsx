@@ -1,38 +1,51 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
+import mapBase from '../assets/map-base.png'
+import pin from '../assets/icon-location-pin.svg'
+import { BackButton } from '../components/BackButton'
 import { Button } from '../components/Button'
-import { DataTable, type Column } from '../components/DataTable'
 import { DeviceFormModal } from '../components/DeviceFormModal'
 import { PageHeader } from '../components/PageHeader'
-import { PinpointMap } from '../components/PinpointMap'
 import { StatusText } from '../components/StatusText'
 import { useData } from '../data/DataContext'
-import type { DistressRecord } from '../data/types'
+import { deviceEvents } from '../data/mock'
 import { useDialogs } from '../hooks/useDialogs'
-import { DEVICE_LIST_DESCRIPTION } from './DeviceListPage'
-import listStyles from './ListPage.module.css'
 import styles from './DeviceProfilePage.module.css'
+
+const TITLE = 'Device and Profile Information'
+const DESCRIPTION =
+  'View resident information, monitor device status and location, and review recent distress logs for effective safety monitoring and device management.'
 
 const dateFormat = new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
 
-const historyColumns: Column<DistressRecord>[] = [
-  { key: 'id', header: 'Record', weight: 1, render: (h) => h.id },
-  { key: 'status', header: 'Status', weight: 1, render: (h) => <StatusText status={h.status} /> },
-  { key: 'location', header: 'Location', weight: 1.6, render: (h) => h.location },
-]
+function DetailSection({ title, rows }: { title: string; rows: [string, ReactNode][] }) {
+  return (
+    <section className={styles.half}>
+      <h2 className={styles.halfTitle}>{title}</h2>
+      <dl className={styles.rows}>
+        {rows.map(([label, value]) => (
+          <div key={label} className={styles.row}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
 
 export function DeviceProfilePage() {
   const { deviceId } = useParams()
   const navigate = useNavigate()
-  const { devices, history, updateDevice, setDevicesArchived } = useData()
+  const { devices, updateDevice, setDevicesArchived } = useData()
   const { confirm, notify, dialogElement } = useDialogs()
   const [editing, setEditing] = useState(false)
   const device = devices.find((d) => d.id === deviceId)
 
   if (!device) {
     return (
-      <div className={listStyles.page}>
-        <PageHeader title="Device List" description={DEVICE_LIST_DESCRIPTION} />
+      <div className={styles.page}>
+        <PageHeader title={TITLE} description={DESCRIPTION} />
         <section className={styles.card}>
           <p className={styles.missing}>
             Device <strong>{deviceId}</strong> was not found. <Link to="/devices">Back to Device List</Link>
@@ -42,74 +55,82 @@ export function DeviceProfilePage() {
     )
   }
 
-  const deviceHistory = history.filter((h) => h.deviceId === device.id && !h.archived)
-  const details: [string, string][] = [
-    ['Resident Name', device.residentName],
+  const events = deviceEvents[device.id] ?? []
+  const residentRows: [string, ReactNode][] = [
+    ['Name', device.residentName],
     ['Date of Birth', device.birthDate ? dateFormat.format(new Date(device.birthDate)) : '—'],
+    ['Pinpoint Location', device.address || '—'],
     ['Phone Number', device.phone ? `+63 ${device.phone}` : '—'],
-    ['Email Address', device.email || '—'],
+    ['Email', device.email || '—'],
+  ]
+  const deviceRows: [string, ReactNode][] = [
+    ['Device ID', device.id],
     ['Device Type', device.type],
-    ['Location', device.location],
-    ['Pinpoint Address', device.address || '—'],
+    ['Status', <StatusText status={device.status} />],
+    ['Battery Life', <StatusText status={device.status}>{device.battery}</StatusText>],
   ]
 
   const deleteDevice = () =>
-    confirm(
-      {
-        title: 'Delete this device?',
-        message: `${device.id} will be moved to the archive. You can restore it from Device List › Archive.`,
-        confirmLabel: 'Delete',
-      },
-      () => {
-        setDevicesArchived([device.id], true)
-        notify('Device Deleted', `${device.id} has been moved to the archive.`, () => navigate('/devices'))
-      },
-    )
+    confirm({ title: 'Delete Device?', message: 'Are you sure you want to delete this device?' }, () => {
+      setDevicesArchived([device.id], true)
+      notify('Successfully Deleted!', 'The device has been deleted successfully.', () => navigate('/devices'))
+    })
+
+  const restoreDevice = () =>
+    confirm({ title: 'Restore Device?', message: 'Are you sure you want to restore this device?' }, () => {
+      setDevicesArchived([device.id], false)
+      notify('Device Restored Successfully!', 'The device has been restored successfully.', () => navigate('/devices'))
+    })
 
   return (
-    <div className={listStyles.page}>
-      <PageHeader title="Device List" description={DEVICE_LIST_DESCRIPTION} />
+    <div className={styles.page}>
+      <PageHeader title={TITLE} description={DESCRIPTION} />
 
-      <section className={styles.card} aria-labelledby="device-profile-title">
+      <section className={styles.card} aria-label={`${device.id} profile`}>
         <div className={styles.toolbar}>
-          <Link to="/devices" className={styles.back}>
-            ← Back to Device List
-          </Link>
-          <h2 id="device-profile-title" className={styles.title}>
-            {device.id} <StatusText status={device.status} />
-          </h2>
-          <div className={styles.actions}>
-            <Button variant="soft" onClick={() => setEditing(true)}>
-              Edit Profile
+          <BackButton onClick={() => navigate('/devices')} />
+          <Button onClick={() => setEditing(true)}>Edit Profile</Button>
+          {device.archived ? (
+            <Button variant="soft" onClick={restoreDevice}>
+              Restore
             </Button>
-            <Button variant="danger" onClick={deleteDevice} disabled={device.archived}>
+          ) : (
+            <Button variant="danger" onClick={deleteDevice}>
               Delete
             </Button>
-          </div>
+          )}
         </div>
 
-        <dl className={styles.details}>
-          {details.map(([label, value]) => (
-            <div key={label} className={styles.detail}>
-              <dt>{label}</dt>
-              <dd>{value}</dd>
-            </div>
-          ))}
-        </dl>
+        <div className={styles.details}>
+          <DetailSection title="Resident Personal Details" rows={residentRows} />
+          <DetailSection title="Device Information" rows={deviceRows} />
+        </div>
 
         <div className={styles.bottom}>
-          <div className={styles.history}>
-            <h3 className={styles.panelTitle}>Distress History</h3>
-            <DataTable
-              caption={`Distress history for ${device.id}`}
-              size="sm"
-              columns={historyColumns}
-              rows={deviceHistory}
-              rowKey={(h) => h.id}
-              emptyMessage="No distress signals recorded for this device."
-            />
+          <div className={styles.panel}>
+            <h2 className={styles.panelTitle}>Geographical Device Location</h2>
+            <div className={styles.map}>
+              <img src={mapBase} alt={`Map showing the location of ${device.id}`} className={styles.mapBase} />
+              <img src={pin} alt="" width={18} height={22} className={styles.pin} />
+            </div>
           </div>
-          <PinpointMap title="Device Location" className={styles.map} />
+
+          <div className={styles.panel}>
+            <h2 className={styles.panelTitle}>Recent Event Logs</h2>
+            {events.length === 0 ? (
+              <p className={styles.empty}>No distress events recorded for this device.</p>
+            ) : (
+              <ul className={styles.events}>
+                {events.map((e) => (
+                  <li key={`${e.date}-${e.time}`} className={styles.event}>
+                    <span>{e.date}</span>
+                    <span>{e.time}</span>
+                    <StatusText status={e.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </section>
 
@@ -118,10 +139,10 @@ export function DeviceProfilePage() {
           device={device}
           onCancel={() => setEditing(false)}
           onSubmit={(input) =>
-            confirm({ title: 'Save changes?', message: `Update the profile of ${device.id}.`, confirmLabel: 'Save' }, () => {
+            confirm({ title: 'Edit Device?', message: 'Are you sure you want to change this info?' }, () => {
               updateDevice(device.id, input)
               setEditing(false)
-              notify('Changes Saved', 'The device profile has been updated.')
+              notify('Changes Saved Successfully!', 'Your changes have been saved successfully.')
             })
           }
         />

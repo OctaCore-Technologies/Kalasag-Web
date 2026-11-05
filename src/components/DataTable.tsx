@@ -44,21 +44,12 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const totalWeight = columns.reduce((sum, c) => sum + c.weight, 0)
   const hasGutter = gutter || Boolean(selection)
-  const keys = rows.map(rowKey)
-  const allSelected = Boolean(selection) && keys.length > 0 && keys.every((k) => selection!.selected.has(k))
 
   const toggle = (key: string) => {
     if (!selection) return
     const next = new Set(selection.selected)
     if (next.has(key)) next.delete(key)
     else next.add(key)
-    selection.onChange(next)
-  }
-
-  const toggleAll = () => {
-    if (!selection) return
-    const next = new Set(selection.selected)
-    keys.forEach((k) => (allSelected ? next.delete(k) : next.add(k)))
     selection.onChange(next)
   }
 
@@ -76,15 +67,7 @@ export function DataTable<T>({
           <tr>
             {hasGutter && (
               <th scope="col" className={styles.gutter}>
-                {selection && (
-                  <input
-                    type="checkbox"
-                    className={styles.checkbox}
-                    checked={allSelected}
-                    onChange={toggleAll}
-                    aria-label="Select all rows"
-                  />
-                )}
+                {selection && <span className="visually-hidden">Select</span>}
               </th>
             )}
             {columns.map((c) => (
