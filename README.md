@@ -52,4 +52,8 @@ src/
 
 ## Deploying
 
-This is a single-page app using browser history routing, so the host must serve `index.html` for unknown paths (a rewrite rule on Vercel, Netlify, Cloudflare Pages, etc.).
+The site is published to **GitHub Pages** at https://octacore-technologies.github.io/Kalasag-Web/ by `.github/workflows/deploy-pages.yml` on every push to `main`. The workflow builds with `BASE_PATH=/Kalasag-Web/` and copies `index.html` to `404.html` so deep links survive a refresh.
+
+One-time setup: in the repo's **Settings → Pages**, set **Source** to **GitHub Actions**.
+
+To host elsewhere, run `npm run build` (base `/`) and configure the host to serve `index.html` for unknown paths.
